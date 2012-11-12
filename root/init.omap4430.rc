@@ -156,6 +156,10 @@ on post-fs-data
 
     setprop vold.post_fs_data_done 1
 
+    # we will remap this as /storage/sdcard0 with the sdcard fuse tool
+    mkdir /data/media 0770 media_rw media_rw
+    chown media_rw media_rw /data/media
+
 on boot
     mount debugfs /sys/kernel/debug /sys/kernel/debug
     setprop ro.radio.noril yes
@@ -199,6 +203,12 @@ on boot
     setprop status.battery.level 5
     setprop status.battery.level_raw  50
     setprop status.battery.level_scale 9
+
+# create virtual SD card at /storage/sdcard0, based on the /data/media directory
+# deamon will drop to user/group system/media_rw after initializing
+# underlying files in /data/media wil be created with user and group media_rw (1023)
+service sdcard /system/bin/sdcard /data/media 1023 1023
+    class core
 
 service fixmac /system/bin/fix-mac.sh
     class core
